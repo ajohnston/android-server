@@ -19,7 +19,7 @@ public class UDPClient {
     
     private InetAddress SERVER_ADDRESS;
     private String      MAGIC_PHRASE;
-    
+    private String      AUTH_STRING;
     
     public UDPClient() {
         try {
@@ -30,6 +30,7 @@ public class UDPClient {
         MAGIC_PHRASE   = "DEBUG";
         try {
             this.authenticate();
+            AUTH_STRING = RCProtocol.AUTH_CMD + MAGIC_PHRASE + "\n";
         } catch (AuthenticationFailedException ex) {
             Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -41,19 +42,19 @@ public class UDPClient {
     }
     
     public void sendMouseCommand(double x, double y) {
-            String coordinates = RCProtocol.MOUSE_CMD + x + "," + y;
+            String coordinates = RCProtocol.MOUSE_CMD + x + "," + y + "\n" + AUTH_STRING;
             byte[] sendData    = coordinates.getBytes();
             this.sendByteArray(sendData);
     }
     
     public void sendKeyCommand(int keycode) {
-        String cmd = RCProtocol.KEY_CMD + keycode;
+        String cmd = RCProtocol.KEY_CMD + keycode + "\n" + AUTH_STRING;
         byte[] sendData = cmd.getBytes();
         this.sendByteArray(sendData);
     }
     
     public void authenticate() throws AuthenticationFailedException {
-        String auth = RCProtocol.AUTH_CMD + MAGIC_PHRASE;
+        String auth = RCProtocol.AUTH_CMD + MAGIC_PHRASE + "\n";
         byte[] sendData = auth.getBytes();
         this.sendByteArray(sendData);
     }
@@ -63,6 +64,13 @@ public class UDPClient {
             DatagramPacket sendPacket = 
                     new DatagramPacket(sendData,sendData.length, SERVER_ADDRESS, 4444);        
             clientSocket.send(sendPacket);
+        //For debugging purposes only. Can remove rest of try statement
+        //once we're sure it works
+        byte[] receiveData = new byte[1024];
+        DatagramPacket pkt = 
+                new DatagramPacket(receiveData, receiveData.length);
+        clientSocket.receive(pkt);
+        System.out.println(new String(pkt.getData()));
         } catch (IOException ex) {
             Logger.getLogger(UDPClient.class.getName()).log(Level.WARNING, null, ex);
         }
