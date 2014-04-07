@@ -21,7 +21,7 @@ public class UDPServer extends Observable implements Runnable {
     public final int PORT = 4444;
     //For future versions, this should be set in a constructor
     //or at least randomized and gettable
-    public final String AUTH_KEY;
+    public String AUTH_KEY = "DEBUG";
     
     private DatagramSocket SERVER_SOCKET;
     //Sender information
@@ -36,7 +36,8 @@ public class UDPServer extends Observable implements Runnable {
     
     //Default Constructor. Used for debug mode.
     public UDPServer() {
-        AUTH_KEY = "DEBUG\n";
+        AUTH_KEY = "DEBUG";
+        
         try {
             robot = new Robot();
         }
@@ -62,9 +63,10 @@ public class UDPServer extends Observable implements Runnable {
                 DatagramPacket receivePacket = 
                         new DatagramPacket(receiveData, receiveData.length);
                 SERVER_SOCKET.receive(receivePacket);
-                String msg = new String(receivePacket.getData());
+                String datum = new String(receivePacket.getData());
+                String msg = new String("Received: " + datum + " in state " + RCProtocol.STATE);
                 //DEBUG
-                System.out.println("Received: " + msg);
+                System.out.println(msg);
                 //Grab Sender details now while it's convenient
                 //But only the first time
                 if (SENDER_IP == null && SENDER_PORT == -1) {
@@ -75,31 +77,42 @@ public class UDPServer extends Observable implements Runnable {
                     this.setChanged();
                     this.notifyObservers(cli);
                 }
-                Command[] cmdArr = parseReceivedData(msg);
+                Command[] cmdArr = parseReceivedData(datum);
+                System.out.println("Command " + cmdArr[0].getCommand());
+                System.out.println("Arg " + cmdArr[0].getArg());
                 if (RCProtocol.STATE == RCProtocol.PRE_AUTH && !cmdArr[0].getCommand().equals(RCProtocol.AUTH_CMD)) {
+                    System.out.println("Auth Error");
+                    System.out.println("Auth String Length: " + RCProtocol.AUTH_CMD.length());
+                    System.out.println("Argument String Length" + cmdArr[0].getCommand().length());
                     this.sendString(RCProtocol.AUTH_ERR);
                 }
                 else if (RCProtocol.STATE == RCProtocol.PRE_AUTH && cmdArr[0].getCommand().equals(RCProtocol.AUTH_CMD)) {
                     //If authentication is successfull
                     if (checkAuth(cmdArr[0].getArg())) {
+                        ClientNotification cli = 
+                                new ClientNotification(SENDER_IP, false, SENDER_PORT);
+                        this.setChanged();
+                        this.notifyObservers(cli);                        
+                        System.out.println("Auth Success");
                         RCProtocol.STATE = RCProtocol.POST_AUTH;
                         this.sendString(RCProtocol.AUTH_SUCCESS);
                     }
                     else { //If Auth failed
+                        System.out.println("Auth Failed");
                         this.sendString(RCProtocol.AUTH_ERR);
                     }
                 }
                 //At this point we are in POST_AUTH stage
-                else if (cmdArr[0].getCommand().equals(RCProtocol.KEY_CMD) && checkAuth(cmdArr[1].getArg())) {
-                    this.doKeyCommand(cmdArr[1].getArg());
+                else if (cmdArr.length > 1 && cmdArr[0].getCommand().equals(RCProtocol.KEY_CMD) && checkAuth(cmdArr[1].getArg())) {
+                    this.doKeyCommand(cmdArr[0].getArg()); //Key would be the command, auth is last
                     //Do we have to check for key errors? I'm guessing not...
                     this.sendString(RCProtocol.KEY_SUCCESS); 
                 }
-                else if (cmdArr[0].getCommand().equals(RCProtocol.MOUSE_CMD) && checkAuth(cmdArr[1].getArg())) {
+                else if (cmdArr.length > 1 && cmdArr[0].getCommand().equals(RCProtocol.MOUSE_CMD) && checkAuth(cmdArr[1].getArg())) {
                     this.doMouseCommand(cmdArr[0].getArg());
                     this.sendString(RCProtocol.MOUSE_SUCCESS);
                 }
-                else if (!checkAuth(cmdArr[1].getArg())) {
+                else if (!checkAuth(cmdArr[0].getArg())) {
                     this.sendString(RCProtocol.AUTH_ERR);
                 }
                 else {
@@ -126,16 +139,17 @@ public class UDPServer extends Observable implements Runnable {
     }
     
     public void doKeyCommand(String keycode) {
-            System.out.println("Sent key: " + keycode);
             char key = (char) Integer.parseInt(keycode);
             robot.keyPress(key);
             robot.keyRelease(key); 
     }
     
     public boolean checkAuth(String user) {
+        user = user.trim();
         if (user.equals(AUTH_KEY)) {
             return true;
         }
+        System.out.println("User supplied: " + AUTH_KEY + " AUTH_KEY: " + user);
         return false;
     }
     
@@ -148,11 +162,14 @@ public class UDPServer extends Observable implements Runnable {
     
     private Command[] parseReceivedData(String data) {
         Command[] resultCommands = new Command[2]; //Only maximum of 2
+        data = data.trim(); //This should remove unused space
         String[] cmd_parts = data.split("\n"); //Split on the newline
+        System.out.println("Command parts: " + cmd_parts.length);
         int index = 0;
         for (String cmd : cmd_parts) {
             String command = this.getCommand(cmd);
             String argument = this.getArgument(cmd);
+            System.out.println("Command: " + command + " Argument: " + argument);
             resultCommands[index] = new Command(command, argument);
             index++;
             if (index > 1) { //Prevent overwrite vuln if > 2 commands sent
@@ -163,19 +180,13 @@ public class UDPServer extends Observable implements Runnable {
     }
     
     private String getCommand(String block) {
-        int colon = block.indexOf(':');
-        if (colon == -1) {
-            return block;
-        }
-        return block.substring(0, colon);
+        String[] split = block.split(":");
+        return split[0] + ":";
     }
     
     private String getArgument(String block) {
-        int colon = block.indexOf(':');
-        if (colon == -1) {
-            return block;
-        }
-        return block.substring(colon);        
+        String[] split = block.split(":");
+        return split[1];      
     }
     
     private static class Command {
