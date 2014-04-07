@@ -64,9 +64,6 @@ public class UDPServer extends Observable implements Runnable {
                         new DatagramPacket(receiveData, receiveData.length);
                 SERVER_SOCKET.receive(receivePacket);
                 String datum = new String(receivePacket.getData());
-                String msg = new String("Received: " + datum + " in state " + RCProtocol.STATE);
-                //DEBUG
-                System.out.println(msg);
                 //Grab Sender details now while it's convenient
                 //But only the first time
                 if (SENDER_IP == null && SENDER_PORT == -1) {
@@ -81,24 +78,19 @@ public class UDPServer extends Observable implements Runnable {
                 System.out.println("Command " + cmdArr[0].getCommand());
                 System.out.println("Arg " + cmdArr[0].getArg());
                 if (RCProtocol.STATE == RCProtocol.PRE_AUTH && !cmdArr[0].getCommand().equals(RCProtocol.AUTH_CMD)) {
-                    System.out.println("Auth Error");
-                    System.out.println("Auth String Length: " + RCProtocol.AUTH_CMD.length());
-                    System.out.println("Argument String Length" + cmdArr[0].getCommand().length());
                     this.sendString(RCProtocol.AUTH_ERR);
                 }
                 else if (RCProtocol.STATE == RCProtocol.PRE_AUTH && cmdArr[0].getCommand().equals(RCProtocol.AUTH_CMD)) {
                     //If authentication is successfull
                     if (checkAuth(cmdArr[0].getArg())) {
                         ClientNotification cli = 
-                                new ClientNotification(SENDER_IP, false, SENDER_PORT);
+                                new ClientNotification(SENDER_IP, true, SENDER_PORT);
                         this.setChanged();
                         this.notifyObservers(cli);                        
-                        System.out.println("Auth Success");
                         RCProtocol.STATE = RCProtocol.POST_AUTH;
                         this.sendString(RCProtocol.AUTH_SUCCESS);
                     }
                     else { //If Auth failed
-                        System.out.println("Auth Failed");
                         this.sendString(RCProtocol.AUTH_ERR);
                     }
                 }
@@ -149,7 +141,6 @@ public class UDPServer extends Observable implements Runnable {
         if (user.equals(AUTH_KEY)) {
             return true;
         }
-        System.out.println("User supplied: " + AUTH_KEY + " AUTH_KEY: " + user);
         return false;
     }
     
@@ -164,12 +155,13 @@ public class UDPServer extends Observable implements Runnable {
         Command[] resultCommands = new Command[2]; //Only maximum of 2
         data = data.trim(); //This should remove unused space
         String[] cmd_parts = data.split("\n"); //Split on the newline
-        System.out.println("Command parts: " + cmd_parts.length);
         int index = 0;
         for (String cmd : cmd_parts) {
             String command = this.getCommand(cmd);
             String argument = this.getArgument(cmd);
-            System.out.println("Command: " + command + " Argument: " + argument);
+            //We'll leave this in b/c I still think there's issues parsing commands
+            //If not, we'll remove it
+            //System.out.println("Command: " + command + " Argument: " + argument);
             resultCommands[index] = new Command(command, argument);
             index++;
             if (index > 1) { //Prevent overwrite vuln if > 2 commands sent
