@@ -22,7 +22,11 @@ public class MainClass {
             Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
         }
         UDPClient cli = new UDPClient();
-        cli.sendKeyCommand('A'); //Should send an 'A'
+        String test = "a simple demo.";
+        char[] arr = test.toCharArray();
+        for (char c : arr) {
+            cli.sendKeyCommand(c);
+        }
         
     }
     
