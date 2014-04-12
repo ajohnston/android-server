@@ -7,6 +7,7 @@ import edu.fordham.cis.remoteconnect.protocol.RCProtocol;
 import edu.fordham.cis.remoteconnect.gui.MainGUI;
 import java.awt.AWTException;
 import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.net.*;
 import java.io.*;
 import java.util.logging.Level;
@@ -87,10 +88,10 @@ public class UDPServer extends Observable implements Runnable {
                 else if (RCProtocol.STATE == RCProtocol.PRE_AUTH && cmdArr[0].getCommand().equals(RCProtocol.AUTH_CMD)) {
                     //If authentication is successfull
                     if (checkAuth(cmdArr[0].getArg())) {
-                        ClientNotification cli = 
+                        ClientNotification nowAuthed = 
                                 new ClientNotification(SENDER_IP, true, SENDER_PORT);
                         this.setChanged();
-                        this.notifyObservers(cli);                        
+                        this.notifyObservers(nowAuthed);                        
                         RCProtocol.STATE = RCProtocol.POST_AUTH;
                         this.sendString(RCProtocol.AUTH_SUCCESS);
                     }
@@ -101,7 +102,6 @@ public class UDPServer extends Observable implements Runnable {
                 //At this point we are in POST_AUTH stage
                 else if (cmdArr.length > 1 && cmdArr[0].getCommand().equals(RCProtocol.KEY_CMD) && checkAuth(cmdArr[1].getArg())) {
                     this.doKeyCommand(cmdArr[0].getArg()); //Key would be the command, auth is last
-                    //Do we have to check for key errors? I'm guessing not...
                     this.sendString(RCProtocol.KEY_SUCCESS); 
                 }
                 else if (cmdArr.length > 1 && cmdArr[0].getCommand().equals(RCProtocol.MOUSE_CMD) && checkAuth(cmdArr[1].getArg())) {
@@ -134,10 +134,10 @@ public class UDPServer extends Observable implements Runnable {
         
     }
     
-    public void doKeyCommand(String keycode) {
-            char key = (char) Integer.parseInt(keycode);
-            robot.keyPress(key);
-            robot.keyRelease(key); 
+    public void doKeyCommand(String keycode) {   
+        int key = KeyEvent.getExtendedKeyCodeForChar(Integer.parseInt(keycode));
+        robot.keyPress(key);
+        robot.keyRelease(key); 
     }
     
     public boolean checkAuth(String user) {

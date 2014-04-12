@@ -14,7 +14,7 @@ public class TestServer {
     
     public static void main(String args) {
         UDPClient cli = new UDPClient();
-        cli.sendKeyCommand(42); //Should send an 'A'
+        cli.sendKeyCommand('A'); //Should send an 'A'
     }
     
     

@@ -47,7 +47,8 @@ public class UDPClient {
             this.sendByteArray(sendData);
     }
     
-    public void sendKeyCommand(int keycode) {
+    public void sendKeyCommand(char key) {
+        int keycode = (int) key;
         String cmd = RCProtocol.KEY_CMD + keycode + "\n" + AUTH_STRING;
         byte[] sendData = cmd.getBytes();
         this.sendByteArray(sendData);
@@ -66,11 +67,7 @@ public class UDPClient {
             clientSocket.send(sendPacket);
         //For debugging purposes only. Can remove rest of try statement
         //once we're sure it works
-        byte[] receiveData = new byte[1024];
-        DatagramPacket pkt = 
-                new DatagramPacket(receiveData, receiveData.length);
-        clientSocket.receive(pkt);
-        System.out.println(new String(pkt.getData()));
+            clientSocket.close();
         } catch (IOException ex) {
             Logger.getLogger(UDPClient.class.getName()).log(Level.WARNING, null, ex);
         }

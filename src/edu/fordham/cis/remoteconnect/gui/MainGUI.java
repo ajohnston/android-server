@@ -240,14 +240,12 @@ public class MainGUI extends javax.swing.JFrame implements Observer{
                 lblStatusUpdate.setText("Connected to " + 
                         cli.getInetAddress().getHostAddress());
             }
-            else {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, 
-                        "Received Packet from {0}", 
+                        "\nReceived Packet from {0}", 
                         cli.getInetAddress().getHostAddress());
                 String str = (cli.isAuthenticated())? "Yes" : "No";
                 Logger.getLogger(MainGUI.class.getName()).log(
                         Level.INFO, "Is Client Authed? {0}", str);
-            }
         }
 
         

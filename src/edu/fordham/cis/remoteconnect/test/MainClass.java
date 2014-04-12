@@ -5,6 +5,8 @@
 package edu.fordham.cis.remoteconnect.test;
 
 import edu.fordham.cis.remoteconnect.client.UDPClient;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -14,8 +16,13 @@ public class MainClass {
 
     
     public static void main(String[] args) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
+        }
         UDPClient cli = new UDPClient();
-        cli.sendKeyCommand(42); //Should send an 'A'
+        cli.sendKeyCommand('A'); //Should send an 'A'
         
     }
     
