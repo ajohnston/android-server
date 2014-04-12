@@ -49,6 +49,12 @@ public class UDPServer extends Observable implements Runnable {
     //Custom Constructor: Pass an Auth Key
     public UDPServer(String auth) {
         AUTH_KEY = auth;
+        try {
+            robot = new Robot();
+        }
+        catch (Exception e) {
+            //Do nothing
+        }
     }
     
     @Override
@@ -74,6 +80,7 @@ public class UDPServer extends Observable implements Runnable {
                     this.setChanged();
                     this.notifyObservers(cli);
                 }
+                System.out.println("RECEIVED: " + datum);
                 Command[] cmdArr = parseReceivedData(datum);
                 System.out.println("Command " + cmdArr[0].getCommand());
                 System.out.println("Arg " + cmdArr[0].getArg());
@@ -152,21 +159,18 @@ public class UDPServer extends Observable implements Runnable {
     }
     
     private Command[] parseReceivedData(String data) {
-        Command[] resultCommands = new Command[2]; //Only maximum of 2
+        Command[] resultCommands = new Command[5]; //Let's have a buffer
         data = data.trim(); //This should remove unused space
         String[] cmd_parts = data.split("\n"); //Split on the newline
         int index = 0;
         for (String cmd : cmd_parts) {
-            String command = this.getCommand(cmd);
-            String argument = this.getArgument(cmd);
+            String command = this.getCommand(cmd.trim());
+            String argument = this.getArgument(cmd.trim());
             //We'll leave this in b/c I still think there's issues parsing commands
             //If not, we'll remove it
             //System.out.println("Command: " + command + " Argument: " + argument);
             resultCommands[index] = new Command(command, argument);
             index++;
-            if (index > 1) { //Prevent overwrite vuln if > 2 commands sent
-                break;
-            }
         }
         return resultCommands;
     }
@@ -178,7 +182,16 @@ public class UDPServer extends Observable implements Runnable {
     
     private String getArgument(String block) {
         String[] split = block.split(":");
-        return split[1];      
+        String tst;
+        try {
+            tst = split[1];
+        }  catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Index out of bounds in arg");
+            
+        } catch (NullPointerException e) {
+            System.out.println("Null Pointer in arg");
+        }
+        return split[1];
     }
     
     private static class Command {
