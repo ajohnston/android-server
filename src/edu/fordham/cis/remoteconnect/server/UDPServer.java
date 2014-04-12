@@ -80,10 +80,7 @@ public class UDPServer extends Observable implements Runnable {
                     this.setChanged();
                     this.notifyObservers(cli);
                 }
-                System.out.println("RECEIVED: " + datum);
                 Command[] cmdArr = parseReceivedData(datum);
-                System.out.println("Command " + cmdArr[0].getCommand());
-                System.out.println("Arg " + cmdArr[0].getArg());
                 if (RCProtocol.STATE == RCProtocol.PRE_AUTH && !cmdArr[0].getCommand().equals(RCProtocol.AUTH_CMD)) {
                     this.sendString(RCProtocol.AUTH_ERR);
                 }
@@ -166,9 +163,6 @@ public class UDPServer extends Observable implements Runnable {
         for (String cmd : cmd_parts) {
             String command = this.getCommand(cmd.trim());
             String argument = this.getArgument(cmd.trim());
-            //We'll leave this in b/c I still think there's issues parsing commands
-            //If not, we'll remove it
-            //System.out.println("Command: " + command + " Argument: " + argument);
             resultCommands[index] = new Command(command, argument);
             index++;
         }
