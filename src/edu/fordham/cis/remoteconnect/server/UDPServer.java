@@ -6,6 +6,8 @@ package edu.fordham.cis.remoteconnect.server;
 import edu.fordham.cis.remoteconnect.protocol.RCProtocol;
 import edu.fordham.cis.remoteconnect.gui.MainGUI;
 import java.awt.AWTException;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.net.*;
@@ -126,11 +128,26 @@ public class UDPServer extends Observable implements Runnable {
         
     }
     
+    //Mouse commands are now the following:
+    //MOUSE:UP|DOWN|LEFT|RIGHT, obviously only one
     public void doMouseCommand(String arg) {
-        String[] strArgs = arg.split(":");
-        int x_move = Integer.parseInt(strArgs[0]);
-        int y_move = Integer.parseInt(strArgs[1]);
-        //Call Wrapper
+        String direction = arg.trim();
+        Point position = MouseInfo.getPointerInfo().getLocation();
+        int xPos = position.x;
+        int yPos = position.y;
+        if (direction.equals(RCProtocol.MOUSE_UP)) {
+            robot.mouseMove(xPos, (yPos - 1));
+        }
+        else if (direction.equals(RCProtocol.MOUSE_DOWN)) {
+            robot.mouseMove(xPos, (yPos + 1));
+        }
+        else if (direction.equals(RCProtocol.MOUSE_LEFT)) {
+            robot.mouseMove((xPos - 1), yPos);
+        }
+        else if (direction.equals(RCProtocol.MOUSE_RIGHT)) {
+            robot.mouseMove((xPos + 1), yPos);
+        }
+        //No default case; I don't want default movement
         
     }
     
