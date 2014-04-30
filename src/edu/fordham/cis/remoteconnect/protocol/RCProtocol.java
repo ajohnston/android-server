@@ -22,6 +22,14 @@ public class RCProtocol {
     public static final String MOUSE_CMD = "MOUSE:";
     public static final String KEY_CMD   = "KEY:";
     //Error Codes
-    public static final String AUTH_ERR = "FUCK OFF";
+    public static final String AUTH_ERR = "AUTH ERR";
     public static final String COMMAND_NOT_SUPPORTED = "BAD CMD";
+    //Mouse Arguments
+    public static final String MOUSE_UP    = "UP";
+    public static final String MOUSE_DOWN  = "DOWN";
+    public static final String MOUSE_LEFT  = "LEFT";
+    public static final String MOUSE_RIGHT = "RIGHT"; 
+    //Click Commands
+    public static final String RCLICK_CMD = "CLICK: RIGHT";
+    public static final String LCLICK_CMD = "CLICK: LEFT";
 }
