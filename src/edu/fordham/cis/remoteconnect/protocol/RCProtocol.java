@@ -17,6 +17,7 @@ public class RCProtocol {
     public static final String KEY_SUCCESS   = "KEY_SUCCESS";
     public static final String MOUSE_SUCCESS = "MOUSE SUCCESS";
     public static final String AUTH_SUCCESS  = "AUTH SUCCESS";
+    public static final String CLICK_SUCCESS = "CLICK SUCCESS";
     //Valid Commands
     public static final String AUTH_CMD  = "AUTH:";
     public static final String MOUSE_CMD = "MOUSE:";
@@ -30,6 +31,6 @@ public class RCProtocol {
     public static final String MOUSE_LEFT  = "LEFT";
     public static final String MOUSE_RIGHT = "RIGHT"; 
     //Click Commands
-    public static final String RCLICK_CMD = "CLICK: RIGHT";
-    public static final String LCLICK_CMD = "CLICK: LEFT";
+    public static final String RCLICK_CMD = "RCLICK";
+    public static final String LCLICK_CMD = "LCLICK";
 }
