@@ -17,16 +17,20 @@ public class MainClass {
     
     public static void main(String[] args) {
         try {
-            Thread.sleep(10000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex) {
             Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
         }
         UDPClient cli = new UDPClient();
-        String test = "a simple demo.";
+        String test = "~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:ZXCVBNM<>?1234567890";
         char[] arr = test.toCharArray();
         for (char c : arr) {
             cli.sendKeyCommand(c);
         }
+        for (int i = 0; i < 5000; i++) {
+            cli.sendMouseCommand(0);
+        }
+
         
     }
     

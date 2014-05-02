@@ -9,6 +9,7 @@ import java.awt.AWTException;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.net.*;
 import java.io.*;
@@ -39,7 +40,7 @@ public class UDPServer extends Observable implements Runnable {
     
     //Default Constructor. Used for debug mode.
     public UDPServer() {
-        AUTH_KEY = "DEBUG";
+        AUTH_KEY ="DEBUG";
         
         try {
             robot = new Robot();
@@ -110,6 +111,14 @@ public class UDPServer extends Observable implements Runnable {
                     this.doMouseCommand(cmdArr[0].getArg());
                     this.sendString(RCProtocol.MOUSE_SUCCESS);
                 }
+                else if (cmdArr.length > 1 && cmdArr[0].getCommand().equals(RCProtocol.RCLICK_CMD) && checkAuth(cmdArr[1].getArg())) {
+                    this.doRightClick();
+                    this.sendString(RCProtocol.CLICK_SUCCESS);
+                }
+                else if (cmdArr.length > 1 && cmdArr[0].getCommand().equals(RCProtocol.LCLICK_CMD) && checkAuth(cmdArr[1].getArg())) {
+                    this.doLeftClick();
+                    this.sendString(RCProtocol.CLICK_SUCCESS);
+                }
                 else if (!checkAuth(cmdArr[0].getArg())) {
                     this.sendString(RCProtocol.AUTH_ERR);
                 }
@@ -122,39 +131,155 @@ public class UDPServer extends Observable implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(UDPServer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (MainGUI.STOP_SERVER) {
-            return; //Shut down the server
-        }
         
+    }
+    
+    private void sleepThread(long sleepTime){
+        
+        try{
+            Thread.sleep(sleepTime);
+        }catch(InterruptedException e){
+            System.err.println(e.getLocalizedMessage());
+        }
     }
     
     //Mouse commands are now the following:
     //MOUSE:UP|DOWN|LEFT|RIGHT, obviously only one
     public void doMouseCommand(String arg) {
+        final int AMOUNT = 1;
         String direction = arg.trim();
         Point position = MouseInfo.getPointerInfo().getLocation();
         int xPos = position.x;
         int yPos = position.y;
-        if (direction.equals(RCProtocol.MOUSE_UP)) {
-            robot.mouseMove(xPos, (yPos - 1));
+        switch (direction) {
+            case RCProtocol.MOUSE_UP:
+                robot.mouseMove(xPos, (yPos - AMOUNT));
+                //sleepThread(15);
+                break;
+            case RCProtocol.MOUSE_DOWN:
+                robot.mouseMove(xPos, (yPos + AMOUNT));
+                //sleepThread(15);
+                break;
+            case RCProtocol.MOUSE_LEFT:
+                robot.mouseMove((xPos - AMOUNT), yPos);
+                //sleepThread(15);
+                break;
+            case RCProtocol.MOUSE_RIGHT:
+                robot.mouseMove((xPos + AMOUNT), yPos);
+                //sleepThread(15);
+                break;
         }
-        else if (direction.equals(RCProtocol.MOUSE_DOWN)) {
-            robot.mouseMove(xPos, (yPos + 1));
-        }
-        else if (direction.equals(RCProtocol.MOUSE_LEFT)) {
-            robot.mouseMove((xPos - 1), yPos);
-        }
-        else if (direction.equals(RCProtocol.MOUSE_RIGHT)) {
-            robot.mouseMove((xPos + 1), yPos);
-        }
-        //No default case; I don't want default movement
         
     }
     
-    public void doKeyCommand(String keycode) {   
-        int key = KeyEvent.getExtendedKeyCodeForChar(Integer.parseInt(keycode));
-        robot.keyPress(key);
-        robot.keyRelease(key); 
+    public void doRightClick() {
+        robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
+        robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
+    }
+    
+    public void doLeftClick() {
+        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);  
+    }
+    
+   public void doKeyCommand(String keycode) {
+        int keycode_int = Integer.parseInt(keycode);
+        int key = getModifiedKeyCode(keycode_int);
+        if (isShiftedKey(keycode_int)) {
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.keyPress(key);
+            robot.keyRelease(key);
+            robot.keyRelease(KeyEvent.VK_SHIFT);
+        }
+        else {
+            robot.keyPress(key);
+            robot.keyRelease(key);            
+        }
+    }
+    
+    public boolean isShiftedKey(int keycode) {
+        char[] specialShifted = new String("~!@#$%^&*()_+{}|:\"<>?").toCharArray();
+        char c = (char) keycode;
+        for (char k : specialShifted) {
+            if (c == k) {
+                return true;
+            }
+        }
+        return Character.isUpperCase(c);
+    }
+    
+    public int getModifiedKeyCode(int keycode) {
+        char[] special = (new String("~!@#$%^&*()_-+{}|:<>?\"`[]\\,.")).toCharArray();
+        char c = (char) keycode;
+        switch(c) {
+            case '~':
+                return KeyEvent.VK_BACK_QUOTE;
+            case '`':
+                return KeyEvent.VK_BACK_QUOTE;
+            case '!':
+                return KeyEvent.VK_1;
+            case '@':
+                return KeyEvent.VK_2;
+            case '#':
+                return KeyEvent.VK_3;
+            case '$':
+                return KeyEvent.VK_4;
+            case '%':
+                return KeyEvent.VK_5;
+            case '^':
+                return KeyEvent.VK_6;
+            case '&':
+                return KeyEvent.VK_7;
+            case '*':
+                return KeyEvent.VK_8;
+            case '(':
+                return KeyEvent.VK_9;
+            case ')':
+                return KeyEvent.VK_0;
+            case '_':
+                return KeyEvent.VK_MINUS;
+            case '-':
+                return KeyEvent.VK_MINUS;
+            case '+':
+                return KeyEvent.VK_EQUALS;
+            case '=':
+                return KeyEvent.VK_EQUALS;
+            case '{':
+                return KeyEvent.VK_OPEN_BRACKET;
+            case '[':
+                return KeyEvent.VK_OPEN_BRACKET;
+            case '}':
+                return KeyEvent.VK_CLOSE_BRACKET;
+            case ']':
+                return KeyEvent.VK_CLOSE_BRACKET;
+            case '|':
+                return KeyEvent.VK_BACK_SLASH;
+            case '\\':
+                return KeyEvent.VK_BACK_SLASH;
+            case ':':
+                return KeyEvent.VK_SEMICOLON;
+            case ';':
+                return KeyEvent.VK_SEMICOLON;
+            case '"':
+                return KeyEvent.VK_QUOTE;
+            case '\'':
+                return KeyEvent.VK_QUOTE;
+            case '<':
+                return KeyEvent.VK_COMMA;
+            case ',':
+                return KeyEvent.VK_COMMA;
+            case '>':
+                return KeyEvent.VK_PERIOD;
+            case '.':
+                return KeyEvent.VK_PERIOD;
+            case '?':
+                return KeyEvent.VK_SLASH;
+            case '/':
+                return KeyEvent.VK_SLASH;
+            default:
+                int k = KeyEvent.getExtendedKeyCodeForChar(keycode);
+                return k;
+        }              
     }
     
     public boolean checkAuth(String user) {
@@ -175,13 +300,19 @@ public class UDPServer extends Observable implements Runnable {
     private Command[] parseReceivedData(String data) {
         Command[] resultCommands = new Command[5]; //Let's have a buffer
         data = data.trim(); //This should remove unused space
+        System.err.println("Recieved data: " + data);
         String[] cmd_parts = data.split("\n"); //Split on the newline
         int index = 0;
         for (String cmd : cmd_parts) {
-            String command = this.getCommand(cmd.trim());
-            String argument = this.getArgument(cmd.trim());
-            resultCommands[index] = new Command(command, argument);
-            index++;
+            if (cmd.isEmpty() || cmd.length() < 5) {
+                continue;
+            }
+            else {
+                String command = this.getCommand(cmd.trim());
+                String argument = this.getArgument(cmd.trim());
+                resultCommands[index] = new Command(command, argument);
+                index++;
+            }
         }
         return resultCommands;
     }

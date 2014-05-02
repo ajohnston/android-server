@@ -81,7 +81,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer{
         lblMagicPhraseUpdate.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         lblMagicPhraseUpdate.setText("11111");
 
-        lblCopyright.setText("(C) Company Name. All Rights Reserved. ");
+        lblCopyright.setText("(C)Andrew Johnston & Anthony Canicatti. All Rights Reserved. ");
 
         buttonStopServer.setText("Stop Server");
         buttonStopServer.addActionListener(new java.awt.event.ActionListener() {
@@ -127,7 +127,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer{
                             .addComponent(lblPortUpdate)
                             .addComponent(lblStatusUpdate)
                             .addComponent(lblIPUpdate))
-                        .addGap(0, 84, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGap(162, 162, 162)
@@ -206,7 +206,7 @@ public class MainGUI extends javax.swing.JFrame implements Observer{
                 MainGUI m = new MainGUI();
                 phrase = getMagicPhrase();
                 System.out.println(phrase);
-                server = new UDPServer("DEBUG"); //Changed from phrase
+                server = new UDPServer(phrase); //Changed from phrase
                 server.addObserver(m);
                 m.setVisible(true);
                 SERVER_THREAD = new Thread(server);
