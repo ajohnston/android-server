@@ -146,7 +146,7 @@ public class UDPServer extends Observable implements Runnable {
     //Mouse commands are now the following:
     //MOUSE:UP|DOWN|LEFT|RIGHT, obviously only one
     public void doMouseCommand(String arg) {
-        final int AMOUNT = 1;
+        final int AMOUNT = 7;
         String direction = arg.trim();
         Point position = MouseInfo.getPointerInfo().getLocation();
         int xPos = position.x;
@@ -173,8 +173,8 @@ public class UDPServer extends Observable implements Runnable {
     }
     
     public void doRightClick() {
-        robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
-        robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
+        robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+        robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
     }
     
     public void doLeftClick() {
@@ -184,16 +184,22 @@ public class UDPServer extends Observable implements Runnable {
     
    public void doKeyCommand(String keycode) {
         int keycode_int = Integer.parseInt(keycode);
-        int key = getModifiedKeyCode(keycode_int);
-        if (isShiftedKey(keycode_int)) {
-            robot.keyPress(KeyEvent.VK_SHIFT);
-            robot.keyPress(key);
-            robot.keyRelease(key);
-            robot.keyRelease(KeyEvent.VK_SHIFT);
+        if (keycode_int == 2000) {
+            robot.keyPress(KeyEvent.VK_BACK_SPACE);
+            robot.keyRelease(KeyEvent.VK_BACK_SPACE);
         }
         else {
-            robot.keyPress(key);
-            robot.keyRelease(key);            
+            int key = getModifiedKeyCode(keycode_int);
+            if (isShiftedKey(keycode_int)) {
+                robot.keyPress(KeyEvent.VK_SHIFT);
+                robot.keyPress(key);
+                robot.keyRelease(key);
+                robot.keyRelease(KeyEvent.VK_SHIFT);
+            }
+            else {
+                robot.keyPress(key);
+                robot.keyRelease(key);            
+            }
         }
     }
     

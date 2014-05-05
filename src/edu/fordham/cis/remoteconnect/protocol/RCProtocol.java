@@ -31,6 +31,12 @@ public class RCProtocol {
     public static final String MOUSE_LEFT  = "LEFT";
     public static final String MOUSE_RIGHT = "RIGHT"; 
     //Click Commands
-    public static final String RCLICK_CMD = "RCLICK";
-    public static final String LCLICK_CMD = "LCLICK";
+    public static final String RCLICK_CMD = "RCLICK:";
+    public static final String LCLICK_CMD = "LCLICK:";
+    
+    public static final String RCLICK_ARG = "ARGCLICK";
+    public static final String LCLICK_ARG = "ARGCLICK";
+    
+    public static final String BACKSPACE_CMD = "BACK:";
+    public static final String BACKSPACE_ARG = "ARG";
 }
